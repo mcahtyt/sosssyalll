@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keşfet - onelupp</title>
+  <meta name="description" content="Keşfet - onelupp sosyal medya platformunda popüler gönderileri ve kullanıcıları keşfedin.">
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnsVe9vkaZqjw7rENN4c4o6PoIjpU_Lbg",
+      authDomain: "onelupp.firebaseapp.com",
+      projectId: "onelupp",
+      storageBucket: "onelupp.appspot.com",
+      messagingSenderId: "713515336901",
+      appId: "1:713515336901:web:a916637848a83aa9685cac",
+      measurementId: "G-W7Z4C4SM2L"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    const exploreGrid = document.getElementById("explorePostsGrid");
+    const noPostsMessage = document.getElementById("noPostsMessage");
+    const spinner = document.getElementById("loadingSpinner");
+    const messageBox = document.getElementById("messageBox");
+    const messageText = document.getElementById("messageText");
+
+    function showMessage(msg) {
+      messageText.textContent = msg;
+      messageBox.style.display = "block";
+    }
+
+    document.getElementById("closeMessageBox").addEventListener("click", () => {
+      messageBox.style.display = "none";
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+      e.preventDefault();
+      await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      loadPosts();
+    });
+
+    async function loadPosts(searchTerm = "") {
+      exploreGrid.innerHTML = "";
+      spinner.style.display = "block";
+      noPostsMessage.style.display = "none";
+
+      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+      const snapshot = await getDocs(q);
+
+      const filtered = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const caption = (data.caption || "").toLowerCase();
+        const username = (data.username || "").toLowerCase();
+        const term = searchTerm.toLowerCase().trim();
+        if (!term || caption.includes(term) || username.includes(term)) {
+          filtered.push({ id: doc.id, ...data });
+        }
+      });
+
+      if (filtered.length === 0) {
+        noPostsMessage.style.display = "block";
+        spinner.style.display = "none";
+        return;
+      }
+
+      for (const post of filtered) {
+        const card = document.createElement("div");
+        card.className = "post-card-explore";
+
+        const imageContainer = document.createElement("div");
+        imageContainer.className = "post-image-container";
+
+        const overlay = document.createElement("div");
+        overlay.className = "post-image-overlay";
+        overlay.textContent = "Görüntüle";
+
+        const img = document.createElement("img");
+        img.className = "post-image-explore";
+        img.alt = post.caption || "Gönderi resmi";
+
+        try {
+          const url = await getDownloadURL(ref(storage, post.imagePath));
+          img.src = url;
+        } catch (err) {
+          img.src = "https://placehold.co/250x200/DBDBDB/8E8E8E?text=Resim+Yok";
+        }
+
+        imageContainer.appendChild(img);
+        imageContainer.appendChild(overlay);
+        card.appendChild(imageContainer);
+
+        const info = document.createElement("div");
+        info.className = "post-info";
+
+        const uname = document.createElement("p");
+        uname.className = "username-explore";
+        uname.textContent = post.username || "kullanıcı";
+
+        const caption = document.createElement("p");
+        caption.className = "caption-explore";
+        caption.textContent = post.caption || "";
+
+        uname.addEventListener("click", (e) => {
+          e.stopPropagation();
+          showMessage(`Profil özelliği geliştirilme aşamasında.`);
+        });
+
+        card.addEventListener("click", () => {
+          showMessage(`Gönderi ID: ${post.id} (detay özelliği yakında)`);
+        });
+
+        info.appendChild(uname);
+        info.appendChild(caption);
+        card.appendChild(info);
+        exploreGrid.appendChild(card);
+      }
+
+      spinner.style.display = "none";
+    }
+
+    document.getElementById("searchButton").addEventListener("click", () => {
+      const term = document.getElementById("searchBar").value;
+      loadPosts(term);
+    });
+
+    document.getElementById("searchBar").addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
+        const term = e.target.value;
+        loadPosts(term);
+      }
+    });
+  </script>
+
+  <style>
+    :root {
+      --primary-bg: #FAFAFA;
+      --card-bg: #FFFFFF;
+      --border-color: #DBDBDB;
+      --text-primary: #262626;
+      --text-secondary: #8E8E8E;
+      --accent-blue: #0095F6;
+      --accent-blue-hover: #007ACC;
+      --button-text-light: #FFFFFF;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background-color: var(--primary-bg);
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: var(--card-bg);
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 2px 5px var(--shadow-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header .logo {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .header nav a {
+      text-decoration: none;
+      margin-left: 25px;
+      font-size: 1em;
+      color: var(--text-primary);
+    }
+
+    .main-content {
+      padding: 30px 20px;
+      max-width: 900px;
+      margin: 20px auto;
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .search-container input[type="text"] {
+      width: 70%;
+      max-width: 400px;
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      font-size: 1em;
+    }
+
+    .search-container button {
+      background-color: var(--accent-blue);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .explore-posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .post-card-explore {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    .post-image-container {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .post-image-explore {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .post-image-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .post-image-container:hover .post-image-overlay {
+      opacity: 1;
+    }
+
+    .post-info {
+      padding: 15px;
+    }
+
+    .username-explore {
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .caption-explore {
+      color: var(--text-secondary);
+      font-size: 0.9em;
+    }
+
+    .footer {
+      background-color: var(--card-bg);
+      text-align: center;
+      padding: 15px;
+      border-top: 1px solid var(--border-color);
+      margin-top: auto;
+      font-size: 0.85em;
+    }
+
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1);
+      border-left-color: var(--accent-blue);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .message-box {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid var(--border-color);
+      padding: 25px 35px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px var(--shadow-color);
+      display: none;
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .message-box button {
+      margin-top: 20px;
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+
+    #noPostsMessage {
+      text-align: center;
+      color: var(--text-secondary);
+      padding: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="logo">onelupp</div>
+    <nav>
+      <a href="home.html">Akış</a>
+      <a href="explore.html">Keşfet</a>
+      <a href="upload.html">Gönderi Oluştur</a>
+      <a href="messages.html">Mesajlar</a>
+      <a href="profile.html">Profilim</a>
+      <a href="#" id="logoutBtn">Çıkış Yap</a>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <h1>Keşfet</h1>
+
+    <div class="search-container">
+      <input type="text" id="searchBar" placeholder="Gönderi ara (açıklama veya kullanıcı)...">
+      <button id="searchButton">Ara</button>
+    </div>
+
+    <div id="loadingSpinner" class="spinner"></div>
+
+    <div id="explorePostsGrid" class="explore-posts-grid">
+      <p id="noPostsMessage" style="display: none;">Henüz gönderi bulunamadı.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 onelupp. Tüm Hakları Saklıdır.</p>
+  </footer>
+
+  <div id="messageBox" class="message-box">
+    <p id="messageText"></p>
+    <button id="closeMessageBox">Tamam</button>
+  </div>
+</body>
+</html>

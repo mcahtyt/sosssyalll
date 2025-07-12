@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>güvercin - Giriş Yap</title>
+    <style>
+        :root {
+            --primary-bg: #FAFAFA;
+            --card-bg: #FFFFFF;
+            --border-color: #DBDBDB;
+            --text-primary: #262626;
+            --text-secondary: #8E8E8E;
+            --accent-blue: #0095F6;
+            --accent-blue-hover: #007ACC;
+            --button-text-light: #FFFFFF;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --error-red: #ED4956;
+            --success-green: #00C851;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            min-height: 600px;
+        }
+
+        .auth-left {
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-right {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 50px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .auth-form {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1em;
+            color: var(--text-primary);
+            background: var(--card-bg);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 149, 246, 0.1);
+        }
+
+        .form-group input.error {
+            border-color: var(--error-red);
+        }
+
+        .form-group input.success {
+            border-color: var(--success-green);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+        }
+
+        .password-toggle:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-blue);
+            color: var(--button-text-light);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 149, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-switch {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+        .auth-switch a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--error-red);
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success-green);
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .loading:after {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--accent-blue);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .auth-right h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .auth-right p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .features {
+            list-style: none;
+            margin-top: 30px;
+        }
+
+        .features li {
+            padding: 10px 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .features li:before {
+            content: "✨";
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+                max-width: 400px;
+            }
+            
+            .auth-left, .auth-right {
+                padding: 30px;
+            }
+            
+            .auth-right {
+                order: -1;
+                padding: 40px 30px 30px;
+            }
+        }
+
+        /* Tab Styles */
+        .tab-container {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="logo">güvercin</div>
+            <p class="subtitle">Sosyal medya deneyiminizi başlatın</p>
+            
+            <div class="tab-container">
+                <button class="tab active" onclick="switchTab('login')">Giriş Yap</button>
+                <button class="tab" onclick="switchTab('register')">Kayıt Ol</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="form-container active">
+                <form class="auth-form" id="loginFormElement">
+                    <div class="form-group">
+                        <label for="loginEmail">E-posta</label>
+                        <input type="email" id="loginEmail" name="email" required>
+                        <div class="error-message" id="loginEmailError"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Şifre</label>
+                        <div class="password-container">
+                            <input type="password" id="loginPassword" name="password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">👁️</button>
+                        </div>
+                        <div class="error-message" id="loginPasswordError"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Giriş Yap</button>
+                    <div class="loading" id="loginLoading">Giriş yapılıyor...</div>
+                    <div class="error-message" id="loginError"></div>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="form-container">
+                <form class="auth-form" id="registerFormElement">
+                    <div class="form-group">
+                        <label for="registerUsername">Kullanıcı Adı</label>
+                        <input type="text" id="registerUsername" name="username" required minlength="3" maxlength="20">
+                        <div class="error-message" id="registerUsernameError"></div>
+                        <div class="success-message" id="registerUsernameSuccess"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerEmail">E-posta</label>
+                        <input type="email" id="registerEmail" name="email" required>
+                        <div class="error-message" id="registerEmailError"></div>
+                        <div class="success-message" id="registerEmailSuccess"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerPassword">Şifre</label>
+                        <div class="password-container">
+                            <input type="password" id="registerPassword" name="password" required minlength="6">
+                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">👁️</button>
+                        </div>
+                        <div class="error-message" id="registerPasswordError"></div>
+                        <div class="success-message" id="registerPasswordSuccess"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Şifreyi Onayla</label>
+                        <div class="password-container">
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</button>
+                        </div>
+                        <div class="error-message" id="confirmPasswordError"></div>
+                        <div class="success-message" id="confirmPasswordSuccess"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Kayıt Ol</button>
+                    <div class="loading" id="registerLoading">Hesap oluşturuluyor...</div>
+                    <div class="error-message" id="registerError"></div>
+                    <div class="success-message" id="registerSuccess"></div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="auth-right">
+            <h2>Hoş Geldiniz!</h2>
+            <p>Güvercin ile sosyal medya deneyiminizi yaşamaya başlayın. Arkadaşlarınızla bağlantı kurun, anılarınızı paylaşın.</p>
+            <ul class="features">
+                <li>Fotoğraflarınızı paylaşın</li>
+                <li>Arkadaşlarınızla etkileşim kurun</li>
+                <li>Yeni insanlarla tanışın</li>
+                <li>Güvenli ve modern platform</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modern Firebase SDK v9+ -->
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAnsVe9vkaZqjw7rENN4c4o6PoIjpU_Lbg",
+            authDomain: "onelupp.firebaseapp.com",
+            projectId: "onelupp",
+            storageBucket: "onelupp.firebasestorage.app",
+            messagingSenderId: "713515336901",
+            appId: "1:713515336901:web:a916637848a83aa9685cac",
+            measurementId: "G-W7Z4C4SM2L"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const analytics = getAnalytics(app);
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginFormElement');
+        const registerForm = document.getElementById('registerFormElement');
+
+        // Tab switching
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        // Password toggle
+        window.togglePassword = function(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+
+        // Show/hide messages
+        function showMessage(elementId, message, isError = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            if (!isError) {
+                element.classList.add('success-message');
+                element.classList.remove('error-message');
+            } else {
+                element.classList.add('error-message');
+                element.classList.remove('success-message');
+            }
+        }
+
+        function hideMessage(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).style.display = 'block';
+        }
+
+        function hideLoading(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        // Input validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+
+        function validateUsername(username) {
+            return username.length >= 3 && username.length <= 20 && /^[a-zA-Z0-9_]+$/.test(username);
+        }
+
+        // Real-time validation
+        document.getElementById('registerUsername').addEventListener('input', function(e) {
+            const username = e.target.value;
+            const input = e.target;
+            
+            if (username.length > 0) {
+                if (validateUsername(username)) {
+                    input.classList.remove('error');
+                    input.classList.add('success');
+                    showMessage('registerUsernameSuccess', 'Kullanıcı adı geçerli ✓', false);
+                    hideMessage('registerUsernameError');
+                } else {
+                    input.classList.remove('success');
+                    input.classList.add('error');
+                    showMessage('registerUsernameError', 'Kullanıcı adı 3-20 karakter arası olmalı ve sadece harf, rakam ve _ içerebilir');
+                    hideMessage('registerUsernameSuccess');
+                }
+            } else {
+                input.classList.remove('success', 'error');
+                hideMessage('registerUsernameError');
+                hideMessage('registerUsernameSuccess');
+            }
+        });
+
+        document.getElementById('registerEmail').addEventListener('input', function(e) {
+            const email = e.target.value;
+            const input = e.target;
+            
+            if (email.length > 0) {
+                if (validateEmail(email)) {
+                    input.classList.remove('error');
+                    input.classList.add('success');
+                    showMessage('registerEmailSuccess', 'E-posta geçerli ✓', false);
+                    hideMessage('registerEmailError');
+                } else {
+                    input.classList.remove('success');
+                    input.classList.add('error');
+                    showMessage('registerEmailError', 'Geçerli bir e-posta adresi girin');
+                    hideMessage('registerEmailSuccess');
+                }
+            } else {
+                input.classList.remove('success', 'error');
+                hideMessage('registerEmailError');
+                hideMessage('registerEmailSuccess');
+            }
+        });
+
+        document.getElementById('registerPassword').addEventListener('input', function(e) {
+            const password = e.target.value;
+            const input = e.target;
+            
+            if (password.length > 0) {
+                if (validatePassword(password)) {
+                    input.classList.remove('error');
+                    input.classList.add('success');
+                    showMessage('registerPasswordSuccess', 'Şifre güçlü ✓', false);
+                    hideMessage('registerPasswordError');
+                } else {
+                    input.classList.remove('success');
+                    input.classList.add('error');
+                    showMessage('registerPasswordError', 'Şifre en az 6 karakter olmalı');
+                    hideMessage('registerPasswordSuccess');
+                }
+            } else {
+                input.classList.remove('success', 'error');
+                hideMessage('registerPasswordError');
+                hideMessage('registerPasswordSuccess');
+            }
+        });
+
+        document.getElementById('confirmPassword').addEventListener('input', function(e) {
+            const confirmPassword = e.target.value;
+            const password = document.getElementById('registerPassword').value;
+            const input = e.target;
+            
+            if (confirmPassword.length > 0) {
+                if (confirmPassword === password) {
+                    input.classList.remove('error');
+                    input.classList.add('success');
+                    showMessage('confirmPasswordSuccess', 'Şifreler eşleşiyor ✓', false);
+                    hideMessage('confirmPasswordError');
+                } else {
+                    input.classList.remove('success');
+                    input.classList.add('error');
+                    showMessage('confirmPasswordError', 'Şifreler eşleşmiyor');
+                    hideMessage('confirmPasswordSuccess');
+                }
+            } else {
+                input.classList.remove('success', 'error');
+                hideMessage('confirmPasswordError');
+                hideMessage('confirmPasswordSuccess');
+            }
+        });
+
+        // Login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Hide previous messages
+            hideMessage('loginError');
+            showLoading('loginLoading');
+            
+            try {
+                // Firebase authentication
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Get user data from Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    // Store user data in memory (not localStorage due to artifact restrictions)
+                    window.loggedInUser = {
+                        id: user.uid,
+                        email: userData.email,
+                        username: userData.username,
+                        profilePic: userData.profilePic || null,
+                        posts: userData.posts || [],
+                        followers: userData.followers || [],
+                        following: userData.following || []
+                    };
+                    
+                    // Redirect to home page
+                    window.location.href = 'home.html';
+                } else {
+                    throw new Error('Kullanıcı verisi bulunamadı');
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = 'Giriş yapılırken bir hata oluştu';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Şifre hatalı';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Geçersiz e-posta adresi';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = 'Bu hesap devre dışı bırakılmış';
+                        break;
+                    case 'auth/invalid-credential':
+                        errorMessage = 'Geçersiz giriş bilgileri';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showMessage('loginError', errorMessage);
+            } finally {
+                hideLoading('loginLoading');
+            }
+        });
+
+        // Register form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Hide previous messages
+            hideMessage('registerError');
+            hideMessage('registerSuccess');
+            showLoading('registerLoading');
+            
+            // Validation
+            if (!validateUsername(username)) {
+                showMessage('registerError', 'Kullanıcı adı 3-20 karakter arası olmalı ve sadece harf, rakam ve _ içerebilir');
+                hideLoading('registerLoading');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showMessage('registerError', 'Geçerli bir e-posta adresi girin');
+                hideLoading('registerLoading');
+                return;
+            }
+            
+            if (!validatePassword(password)) {
+                showMessage('registerError', 'Şifre en az 6 karakter olmalı');
+                hideLoading('registerLoading');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('registerError', 'Şifreler eşleşmiyor');
+                hideLoading('registerLoading');
+                return;
+            }
+            
+            try {
+                // Check if username already exists
+                const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
+                const querySnapshot = await getDocs(usernameQuery);
+                
+                if (!querySnapshot.empty) {
+                    showMessage('registerError', 'Bu kullanıcı adı zaten alınmış');
+                    hideLoading('registerLoading');
+                    return;
+                }
+                
+                // Create user with Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Save user data to Firestore
+                await setDoc(doc(db, 'users', user.uid), {
+                    username: username,
+                    email: email,
+                    profilePic: null,
+                    posts: [],
+                    followers: [],
+                    following: [],
+                    createdAt: serverTimestamp()
+                });
+                
+                // Update user's display name
+                await updateProfile(user, {
+                    displayName: username
+                });
+                
+                showMessage('registerSuccess', 'Hesap başarıyla oluşturuldu! Giriş yapabilirsiniz.', false);
+                
+                // Clear form
+                registerForm.reset();
+                document.querySelectorAll('.form-group input').forEach(input => {
+                    input.classList.remove('success', 'error');
+                });
+                document.querySelectorAll('.success-message').forEach(msg => msg.style.display = 'none');
+                
+                // Switch to login tab after 2 seconds
+                setTimeout(() => {
+                    window.switchTab('login');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                let errorMessage = 'Kayıt olurken bir hata oluştu';
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Bu e-posta adresi zaten kullanılıyor';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Geçersiz e-posta adresi';
+                        break;
+                    case 'auth/operation-not-allowed':
+                        errorMessage = 'E-posta/şifre hesapları devre dışı';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Şifre çok zayıf';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showMessage('registerError', errorMessage);
+            } finally {
+                hideLoading('registerLoading');
+            }
+        });
+
+        // Check if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, redirect to home
+                window.location.href = 'home.html';
+            }
+        });
+    </script>
+</body>
+</html>
